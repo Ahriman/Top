@@ -55,12 +55,13 @@
 
 
             <android.support.design.widget.TextInputEditText
-                android:id="@+id/etNombre"
+                android:id="@+id/etApellidos"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/artist.hint.nombre"
                 android:inputType="textPersonName|textCapWords"
-                android:maxLength="@integer/nombre.maxLenght"/>
+                android:maxLength="@integer/nombre.maxLenght"
+                />
 
         </android.support.design.widget.TextInputLayout>
 
