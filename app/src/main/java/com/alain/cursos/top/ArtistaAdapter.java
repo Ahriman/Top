@@ -79,6 +79,11 @@ public class ArtistaAdapter extends RecyclerView.Adapter<ArtistaAdapter.ViewHold
         }
     }
 
+    public void setList(List<Artista> list) {
+        this.artistas = list;
+        notifyDataSetChanged();
+    }
+
     class ViewHolder extends RecyclerView.ViewHolder {
 
         @BindView(R.id.imgFoto)
