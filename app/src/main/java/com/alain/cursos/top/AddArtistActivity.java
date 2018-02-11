@@ -111,12 +111,12 @@ public class AddArtistActivity extends AppCompatActivity implements DatePickerDi
 
     private void saveArtist() {
 
-        if (validateFielda()) {
+        if (validateFields()) {
 
             mArtista.setNombre(etNombre.getText().toString().trim());
             mArtista.setApellidos(etApellidos.getText().toString().trim());
             mArtista.setEstatura(Short.valueOf(etEstatura.getText().toString().trim()));
-            mArtista.setLugarNacimiento(etFechaNacimiento.getText().toString().trim());
+            mArtista.setLugarNacimiento(etLugarNacimiento.getText().toString().trim());
             mArtista.setNotas(etNotas.getText().toString().trim());
             try {
                 mArtista.save();
@@ -129,7 +129,7 @@ public class AddArtistActivity extends AppCompatActivity implements DatePickerDi
             /*MainActivity.sArtista.setNombre(etNombre.getText().toString().trim());
             MainActivity.sArtista.setApellidos(etApellidos.getText().toString().trim());
             MainActivity.sArtista.setEstatura(Short.valueOf(etEstatura.getText().toString().trim()));
-            MainActivity.sArtista.setLugarNacimiento(etFechaNacimiento.getText().toString().trim());
+            MainActivity.sArtista.setLugarNacimiento(etLugarNacimiento.getText().toString().trim());
             MainActivity.sArtista.setNotas(etNotas.getText().toString().trim());
             MainActivity.sArtista.setOrden(mArtista.getOrden());
             MainActivity.sArtista.setFotoUrl(mArtista.getFotoUrl());*/
@@ -140,7 +140,7 @@ public class AddArtistActivity extends AppCompatActivity implements DatePickerDi
         }
     }
 
-    private boolean validateFielda() {
+    private boolean validateFields() {
         boolean isValid = true;
         if (etEstatura.getText().toString().trim().isEmpty() ||
                 Integer.valueOf(etEstatura.getText().toString().trim()) < getResources().getInteger(R.integer.estatura_min)) {

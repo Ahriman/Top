@@ -1,11 +1,11 @@
 package com.alain.cursos.top;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.NestedScrollView;
@@ -13,7 +13,8 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
+import android.util.Log;
+import android.widget.DatePicker;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -26,8 +27,9 @@ import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
-public class DetalleActivity extends AppCompatActivity {
+public class DetalleActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener {
 
     @BindView(R.id.imgFoto)
     AppCompatImageView imgFoto;
@@ -58,9 +60,10 @@ public class DetalleActivity extends AppCompatActivity {
     @BindView(R.id.fab)
     FloatingActionButton fab;
 
-    private  Artista mArtista;
+    private Artista mArtista;
+    private Calendar mCalendar;
 
-
+    private boolean mIsEdit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,7 +103,7 @@ public class DetalleActivity extends AppCompatActivity {
     }
 
     private String getEdad(long fechaNacimiento) {
-        Long time = Calendar.getInstance().getTimeInMillis()/1000 - fechaNacimiento/1000;
+        Long time = Calendar.getInstance().getTimeInMillis() / 1000 - fechaNacimiento / 1000;
         final int years = Math.round(time) / 31536000;
         return String.valueOf(years);
     }
@@ -120,7 +123,7 @@ public class DetalleActivity extends AppCompatActivity {
     }
 
     private void configImageView(String fotoUrl) {
-        if (fotoUrl != null){
+        if (fotoUrl != null) {
             RequestOptions options = new RequestOptions();
             options.diskCacheStrategy(DiskCacheStrategy.ALL)
                     .centerCrop();
@@ -138,6 +141,91 @@ public class DetalleActivity extends AppCompatActivity {
     }
 
     private void configCalendar() {
+        mCalendar = Calendar.getInstance(Locale.ROOT);
+    }
 
+    @OnClick(R.id.fab)
+    public void saveOrEdit() {
+        if (mIsEdit) {
+            if (validateFields()) {
+
+                mArtista.setNombre(etNombre.getText().toString().trim());
+                mArtista.setApellidos(etApellidos.getText().toString().trim());
+                mArtista.setEstatura(Short.valueOf(etEstatura.getText().toString().trim()));
+                mArtista.setLugarNacimiento(etLugarNacimiento.getText().toString().trim());
+                mArtista.setNotas(etNotas.getText().toString().trim());
+                try {
+                    mArtista.update();
+                    Log.i("DBFlow", "Insercción correcta de datos");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.i("DBFlow", "Error al insertar datos");
+                }
+            }
+
+            fab.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_account_edit));
+            enableUIElements(false);
+            mIsEdit = false;
+        } else {
+            mIsEdit = true;
+            fab.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_account_check));
+            enableUIElements(true);
+        }
+    }
+
+    private boolean validateFields() {
+        boolean isValid = true;
+        if (etEstatura.getText().toString().trim().isEmpty() ||
+                Integer.valueOf(etEstatura.getText().toString().trim()) < getResources().getInteger(R.integer.estatura_min)) {
+            etEstatura.setError(getString(R.string.addArtist_error_estaturaMin));
+            etEstatura.requestFocus();
+            isValid = false;
+        }
+        if (etApellidos.getText().toString().trim().isEmpty()){
+            etApellidos.setError(getString(R.string.addArtist_error_required));
+            etApellidos.requestFocus();
+            isValid = false;
+        }
+        if (etNombre.getText().toString().trim().isEmpty()){
+            etNombre.setError(getString(R.string.addArtist_error_required));
+            etNombre.requestFocus();
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    private void enableUIElements(boolean enable) {
+        etNombre.setEnabled(enable);
+        etApellidos.setEnabled(enable);
+        etFechaNacimiento.setEnabled(enable);
+        etEstatura.setEnabled(enable);
+        etLugarNacimiento.setEnabled(enable);
+        etNotas.setEnabled(enable);
+    }
+
+    @Override
+    public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+        mCalendar.setTimeInMillis(System.currentTimeMillis());
+        mCalendar.set(Calendar.YEAR, year);
+        mCalendar.set(Calendar.MONTH, month);
+        mCalendar.set(Calendar.DAY_OF_MONTH, day);
+
+        etFechaNacimiento.setText(new SimpleDateFormat("dd/MM/yyyy", Locale.ROOT).format(
+                mCalendar.getTimeInMillis()
+        ));
+        mArtista.setFechaNacimiento(mCalendar.getTimeInMillis());
+        etEdad.setText(getEdad(mCalendar.getTimeInMillis()));
+    }
+
+    @OnClick(R.id.etFechaNacimiento)
+    public void onSetFecha() {
+        DialogSelectorFecha selectorFecha = new DialogSelectorFecha();
+        selectorFecha.setListener(DetalleActivity.this);
+
+        Bundle args = new Bundle();
+        args.putLong(DialogSelectorFecha.FECHA, mArtista.getFechaNacimiento());
+        selectorFecha.setArguments(args);
+        selectorFecha.show(getSupportFragmentManager(), DialogSelectorFecha.SELECTED_DATE);
     }
 }
