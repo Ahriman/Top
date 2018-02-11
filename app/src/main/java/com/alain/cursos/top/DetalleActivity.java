@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.NestedScrollView;
@@ -14,6 +15,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.DatePicker;
 
 import com.bumptech.glide.Glide;
@@ -62,7 +65,7 @@ public class DetalleActivity extends AppCompatActivity implements DatePickerDial
 
     private Artista mArtista;
     private Calendar mCalendar;
-
+    private MenuItem mMenuItem;
     private boolean mIsEdit;
 
     @Override
@@ -144,6 +147,24 @@ public class DetalleActivity extends AppCompatActivity implements DatePickerDial
         mCalendar = Calendar.getInstance(Locale.ROOT);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_save, menu);
+        mMenuItem = menu.findItem(R.id.action_save);
+        mMenuItem.setVisible(false);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.action_save:
+                saveOrEdit();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     @OnClick(R.id.fab)
     public void saveOrEdit() {
         if (mIsEdit) {
@@ -156,9 +177,12 @@ public class DetalleActivity extends AppCompatActivity implements DatePickerDial
                 mArtista.setNotas(etNotas.getText().toString().trim());
                 try {
                     mArtista.update();
+                    configTitle();
+                    showMessage(R.string.detalle_message_update_success);
                     Log.i("DBFlow", "Insercción correcta de datos");
                 } catch (Exception e) {
                     e.printStackTrace();
+                    showMessage(R.string.detalle_message_update_fail);
                     Log.i("DBFlow", "Error al insertar datos");
                 }
             }
@@ -202,6 +226,10 @@ public class DetalleActivity extends AppCompatActivity implements DatePickerDial
         etEstatura.setEnabled(enable);
         etLugarNacimiento.setEnabled(enable);
         etNotas.setEnabled(enable);
+
+        mMenuItem.setVisible(enable);
+        appBar.setExpanded(!enable);
+        containerMain.setNestedScrollingEnabled(!enable);
     }
 
     @Override
@@ -227,5 +255,9 @@ public class DetalleActivity extends AppCompatActivity implements DatePickerDial
         args.putLong(DialogSelectorFecha.FECHA, mArtista.getFechaNacimiento());
         selectorFecha.setArguments(args);
         selectorFecha.show(getSupportFragmentManager(), DialogSelectorFecha.SELECTED_DATE);
+    }
+
+    private void showMessage(int resource) {
+        Snackbar.make(containerMain, resource, Snackbar.LENGTH_SHORT).show();
     }
 }
